@@ -20,7 +20,7 @@ enum Focus {
     Writable,
 }
 
-impl<'a, IO: AsyncRead + AsyncWrite, S: Session> Stream<'a, IO, S> {
+impl<'a, IO: io::Read + io::Write, S: Session> Stream<'a, IO, S> {
     pub fn new(io: &'a mut IO, session: &'a mut S) -> Self {
         Stream {
             io,

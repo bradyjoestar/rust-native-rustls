@@ -56,11 +56,23 @@ where
             let mut stream = Stream::new(io, session).set_eof(!state.readable());
 
             if stream.session.is_handshaking() {
-                try_nb!(stream.complete_io());
+                match stream.complete_io() {
+                    Ok(t) => t,
+                    Err(ref e) if e.kind() == ::std::io::ErrorKind::WouldBlock => {
+                        return Ok(::futures::Async::NotReady);
+                    }
+                    Err(e) => return Err(e.into()),
+                }
             }
 
             if stream.session.wants_write() {
-                try_nb!(stream.complete_io());
+                match stream.complete_io() {
+                    Ok(t) => t,
+                    Err(ref e) if e.kind() == ::std::io::ErrorKind::WouldBlock => {
+                        return Ok(::futures::Async::NotReady);
+                    }
+                    Err(e) => return Err(e.into()),
+                }
             }
         }
 
