@@ -12,6 +12,7 @@ use std::io;
 use std::result;
 use tokio_tls::client;
 use tokio_tls::server;
+use webpki::DNSNameRef;
 
 pub struct Identity(imp::Identity);
 
@@ -34,6 +35,13 @@ impl TlsConnector {
             imp::TlsConnectorBuilder::new(identity).unwrap(),
         ))
     }
+
+    pub fn connect<S>(&self, domain: DNSNameRef, stream: S) -> MidHandshakeTlsStream<S>
+    where
+        S: AsyncRead + AsyncWrite,
+    {
+        MidHandshakeTlsStream(self.0.connect(domain, stream))
+    }
 }
 
 pub struct TlsAcceptor(imp::TlsAcceptor);
@@ -41,6 +49,13 @@ pub struct TlsAcceptor(imp::TlsAcceptor);
 impl TlsAcceptor {
     pub fn new(identity: imp::Identity) -> Result<TlsAcceptor, io::Error> {
         Ok(TlsAcceptor(imp::TlsAcceptorBuilder::new(identity).unwrap()))
+    }
+
+    pub fn accept<S>(&self, stream: S) -> MidHandshakeTlsStream<S>
+    where
+        S: AsyncRead + AsyncWrite,
+    {
+        MidHandshakeTlsStream(self.0.accept(stream))
     }
 }
 

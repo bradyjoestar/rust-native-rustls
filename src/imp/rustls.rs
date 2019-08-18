@@ -12,6 +12,7 @@ use std::io::{Error, ErrorKind};
 use std::result;
 use std::sync::Arc;
 use std::{io, mem};
+use webpki::DNSNameRef;
 
 pub enum Identity {
     Server(Arc<ServerConfig>),
@@ -65,8 +66,37 @@ impl TlsConnectorBuilder {
     }
 }
 
+impl TlsConnector {
+    pub fn connect<S>(&self, domain: DNSNameRef, stream: S) -> MidHandshakeTlsStream<S>
+    where
+        S: AsyncRead + AsyncWrite,
+    {
+        let mut session = ClientSession::new(&self.connector.inner, domain);
+        MidHandshakeTlsStream::Client(client::MidHandshake::Handshaking(client::TlsStream {
+            session,
+            io: stream,
+            state: entry::TlsState::Stream,
+        }))
+    }
+}
+
 pub struct TlsAcceptor {
     acceptor: entry::TlsAcceptor,
+}
+
+impl TlsAcceptor {
+    pub fn accept<S>(&self, stream: S) -> MidHandshakeTlsStream<S>
+    where
+        S: AsyncRead + AsyncWrite,
+    {
+        let mut session = ServerSession::new(&self.acceptor.inner);
+
+        MidHandshakeTlsStream::Server(server::MidHandshake::Handshaking(server::TlsStream {
+            session,
+            io: stream,
+            state: entry::TlsState::Stream,
+        }))
+    }
 }
 
 pub struct TlsAcceptorBuilder {}
