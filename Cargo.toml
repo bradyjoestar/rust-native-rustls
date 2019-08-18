@@ -1,0 +1,16 @@
+[package]
+name = "rust-native-rustls"
+version = "0.1.0"
+authors = ["webb.shi <bradyjoestar@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+webpki-roots = "0.17.0"
+rustls = "0.16"
+futures = "0.1"
+tokio-io = "0.1.6"
+bytes = "0.4"
+iovec = "0.1"
+webpki = "0.21"
